@@ -18,6 +18,7 @@ function remove_domain_check($id,$visitor_ip) {
     global $current_domain;
     global $check_file;
     global $deleted_check_file;
+    global $title;
     $result = array();
 
     $deleted_check_json_file = file_get_contents($deleted_check_file);
@@ -59,7 +60,7 @@ function remove_domain_check($id,$visitor_ip) {
             "delete_date" => time(),
             );
 
-        $deleted_json = json_encode($deleted_json_a); 
+        $deleted_json = json_encode($deleted_json_a);
         if(file_put_contents($deleted_check_file, $deleted_json, LOCK_EX)) {
             $result['success'][] = true;
         } else {
@@ -68,7 +69,7 @@ function remove_domain_check($id,$visitor_ip) {
         }
 
         unset($json_a[$id]);
-        $check_json = json_encode($json_a); 
+        $check_json = json_encode($json_a);
         if(file_put_contents($check_file, $check_json, LOCK_EX)) {
             $result['success'][] = true;
         } else {
@@ -79,8 +80,8 @@ function remove_domain_check($id,$visitor_ip) {
         $link = "https://" . $current_domain . "/";
 
         $to      = $deleted_json_a[$id]['email'];
-        $subject = "Certificate Expiry Monitor subscription removed for " . htmlspecialchars($deleted_json_a[$id]['domain']) . ".";
-        $message = "Hello,\r\n\r\nYou have removed the subscription of a  website to the Certificate Expiry Monitor.\r\n\r\nDomain: " . trim(htmlspecialchars($deleted_json_a[$id]['domain'])) . "\r\nEmail: " . trim(htmlspecialchars($deleted_json_a[$id]['email'])) . "\r\nIP subscription removed from: " . htmlspecialchars($visitor_ip) . "\r\nDate subscribed removed: " . date("Y-m-d H:i:s") . "\r\n\r\nWe will not monitor this website any longer and you will not receive any emails whatsoever from us again for this domain. Do note that you might miss an expiring certificate.\r\n\r\nTo re-subscribe this domain please add it again on the Certificate Expiry Monitor website: \r\n\r\n  " . $link . "\r\n\r\nHave a nice day,\r\nThe Certificate Expiry Monitor Service.\r\nhttps://" . $current_domain . "";
+        $subject = $title . " subscription removed for " . htmlspecialchars($deleted_json_a[$id]['domain']) . ".";
+        $message = "Hello,\r\n\r\nYou have removed the subscription of a  website to the " . $title . ".\r\n\r\nDomain: " . trim(htmlspecialchars($deleted_json_a[$id]['domain'])) . "\r\nEmail: " . trim(htmlspecialchars($deleted_json_a[$id]['email'])) . "\r\nIP subscription removed from: " . htmlspecialchars($visitor_ip) . "\r\nDate subscribed removed: " . date("Y-m-d H:i:s") . "\r\n\r\nWe will not monitor this website any longer and you will not receive any emails whatsoever from us again for this domain. Do note that you might miss an expiring certificate.\r\n\r\nTo re-subscribe this domain please add it again on the " . $title . " website: \r\n\r\n  " . $link . "\r\n\r\nHave a nice day,\r\nThe " . $title . " Service.\r\nhttps://" . $current_domain . "";
         $message = wordwrap($message, 70, "\r\n");
         $headers = 'From: noreply@' . $current_domain . "\r\n" .
             'Reply-To: noreply@' . $current_domain . "\r\n" .

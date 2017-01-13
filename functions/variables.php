@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 $version = 1.3;
-$title = "Certificate Expiry Monitor";
+$title = "Joyent Certificate Expiry Monitor";
 
 $current_folder = get_current_folder();
 
@@ -28,12 +28,12 @@ ini_set('default_socket_timeout', 2);
 
 $random_blurp = rand(1000,99999);
 
-$current_domain = "certificatemonitor.org";
+$current_domain = "certmon.joyent.us";
 
 // set this to a location outside of your webroot so that it cannot be accessed via the internets.
 
-$pre_check_file = '/home/certmon/domains/certificatemonitor.org/cert-monitor/pre_checks.json';
-$check_file = '/home/certmon/domains/certificatemonitor.org/cert-monitor/checks.json';
-$deleted_check_file = '/home/certmon/domains/certificatemonitor.org/cert-monitor/deleted_checks.json';
+$pre_check_file = '/var/cert-monitor/pre_checks.json';
+$check_file = '/var/cert-monitor/checks.json';
+$deleted_check_file = '/var/cert-monitor/deleted_checks.json';
 
 ?>

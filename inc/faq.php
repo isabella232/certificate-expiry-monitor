@@ -20,9 +20,6 @@
 
 <h1>FAQ</h1>
 
-<h2>Is this service free?</h2>
-<p>Yes, this service is free. You can add as many domains as you like, however, don't make it excessive. If you do, we might contact you to make an arrangement.</p><br>
-
 <h2>How often do you check a cert?</h2>
 <p>The check will run at least once every 2 days, but most of the time daily.</p><br>
 
@@ -32,9 +29,7 @@
   <li>When you sign up, to confirm the domain(s).</li>
   <li>If a certificate expires in:</li>
   <ul>
-    <li>90 days (3 months)</li>
-    <li>60 days (2 months)</li>
-    <li>30 days (1 month)</li>
+    <li>21 days (3 weeks)</li>
     <li>14 days (2 weeks)</li>
     <li>7 days (1 week)</li>
     <li>5 days</li>

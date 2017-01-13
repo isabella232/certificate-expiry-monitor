@@ -146,17 +146,21 @@ function cert_expiry_emails($domain, $email, $cert_expiry, $raw_cert) {
     
   } else {
     switch ($cert_expiry['cert_time_to_expiry']) {
-      case "7776000":
-        # 90 days...
-        send_expires_in_email(90, $domain, $email, $raw_cert);
-        break;
-      case "5184000":
-        # 60 days...
-        send_expires_in_email(60, $domain, $email, $raw_cert);
-        break;
-      case "2592000":
-        # 30 days...
-        send_expires_in_email(30, $domain, $email, $raw_cert);
+      // case "7776000":
+        // # 90 days...
+        // send_expires_in_email(90, $domain, $email, $raw_cert);
+        // break;
+      // case "5184000":
+        // # 60 days...
+        // send_expires_in_email(60, $domain, $email, $raw_cert);
+        // break;
+      // case "2592000":
+        // # 30 days...
+        // send_expires_in_email(30, $domain, $email, $raw_cert);
+        // break;
+      case "1814400":
+        # 21 days...
+        send_expires_in_email(21, $domain, $email, $raw_cert);
         break;
       case "1209600":
         # 14 days...

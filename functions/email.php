@@ -15,17 +15,20 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 function validate_email($email) {
+  if (!preg_match('/@joyent.com$/',$_POST['email'])) {
+    return false;
+  }
   if (!filter_var(mb_strtolower($email), FILTER_VALIDATE_EMAIL)) {
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 function send_error_mail($domain, $email, $errors) {
   echo "\t\tSending error mail to $email for $domain.\n";
   global $current_domain;
   global $check_file;
+  global $title;
   $domain = trim($domain);
   $errors = implode("\r\n", $errors);
   $json_file = file_get_contents($check_file);
@@ -45,8 +48,8 @@ function send_error_mail($domain, $email, $errors) {
       $failures = $value['errors'];
       $unsublink = "https://" . $current_domain . "/unsubscribe.php?id=" . $id;
       $to      = $email;
-      $subject = "Certificate monitor " . htmlspecialchars($domain) . " failed.";
-      $message = "Hello,\r\n\r\nYou have a subscription to monitor the certificate of " . htmlspecialchars($domain) . " with the the Certificate Expiry Monitor. This is a service which monitors an SSL certificate on a website, and notifies you when it is about to expire. This extra notification helps you remember to renew your certificate on time.\r\n\r\nWe've noticed that the check for the following domain has failed: \r\n\r\nDomain: " . htmlspecialchars($domain) . "\r\nError(s): " . htmlspecialchars($errors) . "\r\n\r\nFailure(s): " . htmlspecialchars($failures) . "\r\n\r\nPlease check this website or it's certificate. If the check fails 7 times we will remove it from our monitoring. If the check succeeds again within 7 failures, the failure count will reset.\r\n\r\nTo unsubscribe from notifications for this domain please click or copy and paste the below link in your browser:\r\n\r\n" . $unsublink . "\r\n\r\n\r\n Have a nice day,\r\nThe Certificate Expiry Monitor Service.\r\nhttps://" . $current_domain . "";
+      $subject = "Certificate monitor check for " . htmlspecialchars($domain) . " failed.";
+      $message = "Hello,\r\n\r\nYou have a subscription to monitor the certificate of " . htmlspecialchars($domain) . " with the the " . $title . ". This is a service which monitors an SSL certificate on a website, and notifies you when it is about to expire. This extra notification helps you remember to renew your certificate on time.\r\n\r\nWe've noticed that the check for the following domain has failed: \r\n\r\nDomain: " . htmlspecialchars($domain) . "\r\nError(s): " . htmlspecialchars($errors) . "\r\n\r\nFailure(s): " . htmlspecialchars($failures) . "\r\n\r\nPlease check this website or it's certificate. If the check fails 7 times we will remove it from our monitoring. If the check succeeds again within 7 failures, the failure count will reset.\r\n\r\nTo unsubscribe from notifications for this domain please click or copy and paste the below link in your browser:\r\n\r\n" . $unsublink . "\r\n\r\n\r\n Have a nice day,\r\nThe " . $title . " Service.\r\nhttps://" . $current_domain . "";
       $message = wordwrap($message, 70, "\r\n");
       $headers = 'From: noreply@' . $current_domain . "\r\n" .
           'Reply-To: noreply@' . $current_domain . "\r\n" .
@@ -54,7 +57,7 @@ function send_error_mail($domain, $email, $errors) {
           'X-Visitor-IP: ' . $visitor_ip . "\r\n" .
           'X-Coffee: Black' . "\r\n" .
           'List-Unsubscribe: <https://' . $current_domain . "/unsubscribe.php?id=" . $id . ">" . "\r\n" .
-          'X-Mailer: PHP/4.1.1';  
+          'X-Mailer: PHP/4.1.1';
 
       if (mail($to, $subject, $message, $headers) === true) {
           echo "\t\tEmail sent to $to.\n";
@@ -63,13 +66,14 @@ function send_error_mail($domain, $email, $errors) {
           echo "\t\tCan't send email.\n";
           return false;
       }
-    } 
+    }
   }
 }
 
 function send_cert_expired_email($days, $domain, $email, $raw_cert) {
   global $current_domain;
   global $check_file;
+  global $title;
   $domain = trim($domain);
   echo "\t\tDomain " . $domain . " expired " . $days . " ago.\n";
 
@@ -105,7 +109,7 @@ function send_cert_expired_email($days, $domain, $email, $raw_cert) {
 
       $to      = $email;
       $subject = "A certificate for " . htmlspecialchars($domain) . " expired " . htmlspecialchars($days) . " days ago";
-      $message = "Hello,\r\n\r\nYou have a subscription to monitor the certificate of " . htmlspecialchars($domain) . " with the the Certificate Expiry Monitor. This is a service which monitors an SSL certificate on a website, and notifies you when it is about to expire. This extra notification helps you remember to renew your certificate on time.\r\n\r\nWe've noticed that the following domain has a certificate in it's chain that has expired " . htmlspecialchars($days) . " days ago:\r\n\r\nDomain: " . htmlspecialchars($domain) . "\r\nCertificate Common Name: " . htmlspecialchars($cert_cn) . "\r\nCertificate Subject: " . htmlspecialchars($cert_subject) . "\r\nCertificate Serial: " . htmlspecialchars($cert_serial) . "\r\nCertificate Valid From: " . htmlspecialchars(date("Y-m-d  H:i:s T", $cert_validfrom_date)) . " (" . $cert_valid_days_ago . " days ago)\r\nCertificate Valid Until: " . htmlspecialchars(date("Y-m-d  H:i:s T", $cert_expiry_date)) . " (" . $cert_valid_days_ahead . " days ago)\r\n\r\nYou should renew and replace your certificate right now. If you haven't set up the certificate yourself, please forward this email to the person/company that did this for you.\r\n\rThis website is now  non-functional and displays errors to it's users. Please fix this issue as soon as possible.\r\n\r\nTo unsubscribe from notifications for this domain please click or copy and paste the below link in your browser:\r\n\r\n" . $unsublink . "\r\n\r\n\r\n Have a nice day,\r\nThe Certificate Expiry Monitor Service.\r\nhttps://" . $current_domain . "";
+      $message = "Hello,\r\n\r\nYou have a subscription to monitor the certificate of " . htmlspecialchars($domain) . " with the the " . $title . ". This is a service which monitors an SSL certificate on a website, and notifies you when it is about to expire. This extra notification helps you remember to renew your certificate on time.\r\n\r\nWe've noticed that the following domain has a certificate in it's chain that has expired " . htmlspecialchars($days) . " days ago:\r\n\r\nDomain: " . htmlspecialchars($domain) . "\r\nCertificate Common Name: " . htmlspecialchars($cert_cn) . "\r\nCertificate Subject: " . htmlspecialchars($cert_subject) . "\r\nCertificate Serial: " . htmlspecialchars($cert_serial) . "\r\nCertificate Valid From: " . htmlspecialchars(date("Y-m-d  H:i:s T", $cert_validfrom_date)) . " (" . $cert_valid_days_ago . " days ago)\r\nCertificate Valid Until: " . htmlspecialchars(date("Y-m-d  H:i:s T", $cert_expiry_date)) . " (" . $cert_valid_days_ahead . " days ago)\r\n\r\nYou should renew and replace your certificate right now. If you haven't set up the certificate yourself, please forward this email to the person/company that did this for you.\r\n\rThis website is now  non-functional and displays errors to it's users. Please fix this issue as soon as possible.\r\n\r\nTo unsubscribe from notifications for this domain please click or copy and paste the below link in your browser:\r\n\r\n" . $unsublink . "\r\n\r\n\r\n Have a nice day,\r\nThe " . $title . " Service.\r\nhttps://" . $current_domain . "";
       $message = wordwrap($message, 70, "\r\n");
       $headers = 'From: noreply@' . $current_domain . "\r\n" .
           'Reply-To: noreply@' . $current_domain . "\r\n" .
@@ -113,7 +117,7 @@ function send_cert_expired_email($days, $domain, $email, $raw_cert) {
           'X-Visitor-IP: ' . $visitor_ip . "\r\n" .
           'X-Coffee: Black' . "\r\n" .
           'List-Unsubscribe: <https://' . $current_domain . "/unsubscribe.php?id=" . $id . ">" . "\r\n" .
-          'X-Mailer: PHP/4.1.1';  
+          'X-Mailer: PHP/4.1.1';
 
       if (mail($to, $subject, $message, $headers) === true) {
           echo "\t\tEmail sent to $to.\n";
@@ -122,14 +126,15 @@ function send_cert_expired_email($days, $domain, $email, $raw_cert) {
           echo "\t\tCan't send email.\n";
           return false;
       }
-    } 
+    }
   }
-  
+
 }
 
 function send_expires_in_email($days, $domain, $email, $raw_cert) {
   global $current_domain;
   global $check_file;
+  global $title;
   $domain = trim($domain);
   echo "\t\tDomain " . $domain . " expires in " . $days . " days.\n";
 
@@ -165,7 +170,7 @@ function send_expires_in_email($days, $domain, $email, $raw_cert) {
 
       $to      = $email;
       $subject = "A certificate for " . htmlspecialchars($domain) . " expires in " . htmlspecialchars($days) . " days";
-      $message = "Hello,\r\n\r\nYou have a subscription to monitor the certificate of " . htmlspecialchars($domain) . " with the the Certificate Expiry Monitor. This is a service which monitors an SSL certificate on a website, and notifies you when it is about to expire. This extra notification helps you remember to renew your certificate on time.\r\n\r\nWe've noticed that the following domain has a certificate in it's chain that will expire in " . htmlspecialchars($days) . " days:\r\n\r\nDomain: " . htmlspecialchars($domain) . "\r\nCertificate Common Name: " . htmlspecialchars($cert_cn) . "\r\nCertificate Subject: " . htmlspecialchars($cert_subject) . "\r\nCertificate Serial: " . htmlspecialchars($cert_serial) . "\r\nCertificate Valid From: " . htmlspecialchars(date("Y-m-d  H:i:s T", $cert_validfrom_date)) . " (" . $cert_valid_days_ago . " days ago)\r\nCertificate Valid Until: " . htmlspecialchars(date("Y-m-d  H:i:s T", $cert_expiry_date)) . " (" . $cert_valid_days_ahead . " days left)\r\n\r\nYou should renew and replace your certificate before it expires. If you haven't set up the certificate yourself, please forward this email to the person/company that did this for you.\r\n\r\nNot replacing your certificate before the expiry date will result in a non-functional website with errors.\r\n\r\nTo unsubscribe from notifications for this domain please click or copy and paste the below link in your browser:\r\n\r\n" . $unsublink . "\r\n\r\n\r\n Have a nice day,\r\nThe Certificate Expiry Monitor Service.\r\nhttps://" . $current_domain . "";
+      $message = "Hello,\r\n\r\nYou have a subscription to monitor the certificate of " . htmlspecialchars($domain) . " with the the " . $title . ". This is a service which monitors an SSL certificate on a website, and notifies you when it is about to expire. This extra notification helps you remember to renew your certificate on time.\r\n\r\nWe've noticed that the following domain has a certificate in it's chain that will expire in " . htmlspecialchars($days) . " days:\r\n\r\nDomain: " . htmlspecialchars($domain) . "\r\nCertificate Common Name: " . htmlspecialchars($cert_cn) . "\r\nCertificate Subject: " . htmlspecialchars($cert_subject) . "\r\nCertificate Serial: " . htmlspecialchars($cert_serial) . "\r\nCertificate Valid From: " . htmlspecialchars(date("Y-m-d  H:i:s T", $cert_validfrom_date)) . " (" . $cert_valid_days_ago . " days ago)\r\nCertificate Valid Until: " . htmlspecialchars(date("Y-m-d  H:i:s T", $cert_expiry_date)) . " (" . $cert_valid_days_ahead . " days left)\r\n\r\nYou should renew and replace your certificate before it expires. If you haven't set up the certificate yourself, please forward this email to the person/company that did this for you.\r\n\r\nNot replacing your certificate before the expiry date will result in a non-functional website with errors.\r\n\r\nTo unsubscribe from notifications for this domain please click or copy and paste the below link in your browser:\r\n\r\n" . $unsublink . "\r\n\r\n\r\n Have a nice day,\r\nThe " . $title . " Service.\r\nhttps://" . $current_domain . "";
       $message = wordwrap($message, 70, "\r\n");
       $headers = 'From: noreply@' . $current_domain . "\r\n" .
           'Reply-To: noreply@' . $current_domain . "\r\n" .
@@ -173,7 +178,7 @@ function send_expires_in_email($days, $domain, $email, $raw_cert) {
           'X-Visitor-IP: ' . $visitor_ip . "\r\n" .
           'X-Coffee: Black' . "\r\n" .
           'List-Unsubscribe: <https://' . $current_domain . "/unsubscribe.php?id=" . $id . ">" . "\r\n" .
-          'X-Mailer: PHP/4.1.1';  
+          'X-Mailer: PHP/4.1.1';
 
       if (mail($to, $subject, $message, $headers) === true) {
           echo "\t\tEmail sent to $to.\n";
@@ -182,7 +187,7 @@ function send_expires_in_email($days, $domain, $email, $raw_cert) {
           echo "\t\tCan't send email.\n";
           return false;
       }
-    } 
+    }
   }
 }
 
